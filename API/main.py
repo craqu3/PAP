@@ -1,20 +1,28 @@
+import auth_routes
+
 import jwt
 import mysql.connector
 from fastapi import FastAPI
 
 
+
+
+mydb = mysql.connector.connect(
+  host=" ",
+  user=" ",
+  password=" "
+)
+
+
+
+cursor = mydb
+cursor.execute("SHOW DATABASE")
+
+
 app = FastAPI()
 
-def get_connection():
-    return mysql.connector.connect(
-        host=" ",
-        user=" ",
-        password=" ",
-        database=""
-    )
 
-
-
+app.includeroutes()
 
 
 @app.get("/")
@@ -23,6 +31,3 @@ def teste():
 
 
 
-@app.post("/login")
-def login(request: LoginRequest):
-    return {"email": request.email, "password": request.password}

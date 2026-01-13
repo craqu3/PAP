@@ -1,9 +1,17 @@
 from fastapi import APIRouter
-
+import main
 auth_route = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 
+
+@auth_route.post("/register")
+async def register(email: str, password: str):
+    if user != users:
+
+    else:
+
+    return
 
 
 
@@ -14,6 +22,3 @@ def login(request: LoginRequest):
 
 
 
-@auth_route.post("/register")
-def login(request: RegisterRequest):
-    return {"email": request.email, "password": request.password}
