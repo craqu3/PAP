@@ -5,6 +5,7 @@ from email import send_recovery_email
 import bcrypt
 import secrets
 import datetime
+import pymysql
 
 auth_route = APIRouter(prefix="/auth", tags=["Auth"])
 

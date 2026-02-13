@@ -1,5 +1,5 @@
 import pymysql
-import cryptography
+
 
 print("Script iniciado")
 
