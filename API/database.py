@@ -9,7 +9,8 @@ def get_database():
     user="root",
     password="123456789",
     database="pap",
-    autocommit=True
+    autocommit=True,
+    cursorclass=pymysql.cursors.DictCursor
     )
 
 

@@ -1,3 +1,5 @@
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from auth_routes import auth_route
 
@@ -5,6 +7,9 @@ from auth_routes import auth_route
 
 
 app = FastAPI()
+
+load_dotenv()
+
 
 
 app.include_router(auth_route)
