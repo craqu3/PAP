@@ -1,8 +1,8 @@
 -- --------------------------------------------------------
 -- Anfitrião:                    127.0.0.1
--- Versão do servidor:           9.5.0 - MySQL Community Server - GPL
+-- Versão do servidor:           9.6.0 - MySQL Community Server - GPL
 -- SO do servidor:               Win64
--- HeidiSQL Versão:              12.8.0.6908
+-- HeidiSQL Versão:              12.5.0.6677
 -- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -61,14 +61,16 @@ CREATE TABLE IF NOT EXISTS `users` (
   `role` enum('client','deliver','restaurant') NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `tokenTime` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- A despejar dados para tabela pap.users: ~2 rows (aproximadamente)
-INSERT INTO `users` (`ID`, `firstName`, `lastName`, `email`, `password`, `recEmail`, `gender`, `role`, `created_at`, `update_at`) VALUES
-	(1, 'teste', 'test', 'teste', 'teste', 'tes', 'male', 'restaurant', '2026-02-06 15:39:41', '2026-02-06 15:39:43'),
-	(2, 'Testeee', 'Teste', 'test@exemplo.com', '$2b$12$Ba31q6JiwOAv8OeD6l8MFuZnowbiDAdzPS43VLnCMLKsOAytUdkEW', NULL, NULL, 'client', '2026-02-06 16:41:11', '2026-02-06 16:41:11');
+INSERT INTO `users` (`ID`, `firstName`, `lastName`, `email`, `password`, `recEmail`, `gender`, `role`, `created_at`, `update_at`, `token`, `tokenTime`) VALUES
+	(1, 'teste', 'test', 'teste', 'teste', 'tes', 'male', 'restaurant', '2026-02-06 15:39:41', '2026-02-06 15:39:43', NULL, NULL),
+	(2, 'Testeee', 'Teste', 'a.rochagabri@gmail.com', '$2b$12$pKN.3Wv9izyvkNuNWNU6Seo4JrTo9m.ZQOlD9i4SI8xjZtL2HoEum', NULL, NULL, 'client', '2026-02-06 16:41:11', '2026-02-22 16:36:13', NULL, NULL);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

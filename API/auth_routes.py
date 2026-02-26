@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from database import get_database
 from email_recover import send_recovery_email
-from jwt import create_access_token
+from jwt_handler import create_access_token
 import bcrypt
 import secrets
 import datetime
