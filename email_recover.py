@@ -7,7 +7,6 @@ def send_recovery_email(to_email: str, token: str, first_name: str):
     sender_email = os.getenv("EMAIL_USER")
     sender_password = os.getenv("EMAIL_PASS")
 
-    print(f"EmaiL: {sender_email}")
     reset_link = f"http://localhost:3000/reset-password?token={token}"
 
     subject = "Recuperação de Password"

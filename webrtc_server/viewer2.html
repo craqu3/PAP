@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC Viewer</title>
+</head>
+<body style="background:#111;color:white;font-family:Arial">
+
+<h2>Live Viewer</h2>
+
+<video id="video" autoplay playsinline controls style="width:80%"></video>
+
+<script>
+const ws = new WebSocket("ws://10.222.248.231:9000");
+
+const pc = new RTCPeerConnection({
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+});
+
+pc.ontrack = (event) => {
+  document.getElementById("video").srcObject = event.streams[0];
+};
+
+pc.onicecandidate = (event) => {
+  if (event.candidate) {
+    ws.send(JSON.stringify({
+      type: "candidate",
+      candidate: {
+        candidate: event.candidate.candidate,
+        sdpMid: event.candidate.sdpMid,
+        sdpMLineIndex: event.candidate.sdpMLineIndex
+      }
+    }));
+  }
+};
+
+ws.onmessage = async (msg) => {
+  const data = JSON.parse(msg.data);
+
+  if (data.type === "offer") {
+    await pc.setRemoteDescription({
+      type: "offer",
+      sdp: data.sdp
+    });
+
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    ws.send(JSON.stringify({
+      type: "answer",
+      sdp: answer.sdp
+    }));
+  }
+
+  if (data.type === "candidate") {
+    await pc.addIceCandidate(data.candidate);
+  }
+};
+</script>
+
+</body>
+</html>

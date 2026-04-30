@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StablePack Live (Web)</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0c0f;
+        --panel: #12131a;
+        --text: #e8e8ea;
+        --muted: #a1a1aa;
+        --accent: #ffd600;
+        --danger: #ff8080;
+        --ok: #34d399;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1000px 600px at 40% 20%, #1a1b22 0%, var(--bg) 60%);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 14px;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
+      }
+      video {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: #000;
+        border-radius: 10px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--text);
+        padding: 10px 10px;
+        border-radius: 10px;
+        outline: none;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .btns {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      button {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.25);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 650;
+      }
+      button.primary {
+        background: rgba(255, 214, 0, 0.18);
+        border-color: rgba(255, 214, 0, 0.35);
+      }
+      button.danger {
+        background: rgba(255, 128, 128, 0.14);
+        border-color: rgba(255, 128, 128, 0.28);
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .pill {
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .pill.ok {
+        border-color: rgba(52, 211, 153, 0.35);
+        color: var(--ok);
+      }
+      .pill.err {
+        border-color: rgba(255, 128, 128, 0.35);
+        color: var(--danger);
+      }
+      pre {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: rgba(232, 232, 234, 0.92);
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>StablePack Live (Web)</h1>
+        <div class="hint">Liga ao WebSocket de sinalização e mostra o vídeo em tempo real via WebRTC.</div>
+      </header>
+
+      <div class="grid">
+        <div class="card">
+          <video id="video" playsinline autoplay controls muted></video>
+          <div class="status">
+            <div>
+              Estado:
+              <span id="pill" class="pill">idle</span>
+            </div>
+            <div class="mono" id="wsLabel"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <label for="wsUrl">WS signaling URL</label>
+              <input id="wsUrl" class="mono" />
+            </div>
+            <div>
+              <label for="roomId">room_id</label>
+              <input id="roomId" class="mono" value="default" />
+            </div>
+          </div>
+
+          <div class="btns">
+            <button id="connect" class="primary">Conectar</button>
+            <button id="disconnect" class="danger" disabled>Desligar</button>
+          </div>
+
+          <div style="height: 10px"></div>
+          <label>Logs</label>
+          <pre id="log" class="mono"></pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const videoEl = document.getElementById("video");
+      const logEl = document.getElementById("log");
+      const wsUrlEl = document.getElementById("wsUrl");
+      const roomIdEl = document.getElementById("roomId");
+      const pillEl = document.getElementById("pill");
+      const wsLabelEl = document.getElementById("wsLabel");
+      const connectBtn = document.getElementById("connect");
+      const disconnectBtn = document.getElementById("disconnect");
+
+      function pickDefaultWsUrl() {
+        const host = window.location.hostname || "10.222.248.231";
+        return `ws://${host}:9000`;
+      }
+
+      wsUrlEl.value = pickDefaultWsUrl();
+      wsLabelEl.textContent = wsUrlEl.value;
+
+      function setState(state, kind = "idle") {
+        pillEl.textContent = state;
+        pillEl.className = "pill";
+        if (kind === "ok") pillEl.classList.add("ok");
+        if (kind === "err") pillEl.classList.add("err");
+      }
+
+      function log(line) {
+        logEl.textContent += `${new Date().toLocaleTimeString()}  ${line}\n`;
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      let ws = null;
+      let pc = null;
+
+      async function disconnect() {
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        setState("disconnecting…");
+
+        try {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "close", role: "viewer" }));
+          }
+        } catch {}
+
+        try { ws && ws.close(); } catch {}
+        ws = null;
+
+        try { pc && pc.close(); } catch {}
+        pc = null;
+
+        try { videoEl.srcObject = null; } catch {}
+        setState("idle");
+        log("Disconnected.");
+      }
+
+      async function connect() {
+        const wsUrl = wsUrlEl.value.trim();
+        const roomId = roomIdEl.value.trim() || "default";
+        wsLabelEl.textContent = wsUrl;
+
+        if (!wsUrl.startsWith("ws://") && !wsUrl.startsWith("wss://")) {
+          setState("WS inválido", "err");
+          log("WS URL inválida. Usa ws://IP:9000 (ou wss://).");
+          return;
+        }
+
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+        setState("connecting…");
+        log(`Connecting WS: ${wsUrl} (room=${roomId})`);
+
+        ws = new WebSocket(wsUrl);
+
+        ws.onerror = () => {
+          setState("ws error", "err");
+          log("WebSocket error.");
+        };
+
+        ws.onclose = () => {
+          log("WebSocket closed.");
+        };
+
+        ws.onmessage = async (ev) => {
+          let msg = null;
+          try { msg = JSON.parse(String(ev.data)); } catch {}
+          if (!msg) return;
+
+          if (msg.error) {
+            setState(`error: ${msg.error}`, "err");
+            log(`Server error: ${msg.error}`);
+            return;
+          }
+
+          if (msg.type === "answer" && typeof msg.sdp === "string") {
+            log("Got answer; setting remote description…");
+            await pc.setRemoteDescription({ type: "answer", sdp: msg.sdp });
+            setState("connected", "ok");
+            return;
+          }
+
+          if (msg.type === "candidate" && msg.candidate) {
+            try {
+              await pc.addIceCandidate(msg.candidate);
+            } catch (e) {
+              log(`Failed to add remote ICE candidate: ${e?.message || e}`);
+            }
+          }
+        };
+
+        await new Promise((resolve, reject) => {
+          ws.onopen = resolve;
+          ws.onerror = () => reject(new Error("WS connect failed"));
+        });
+
+        log("WS connected. Creating RTCPeerConnection…");
+        pc = new RTCPeerConnection({
+          iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+        });
+
+        pc.ontrack = (event) => {
+          const [stream] = event.streams || [];
+          if (!stream) return;
+          videoEl.srcObject = stream;
+          log("Remote video stream attached.");
+        };
+
+        pc.onicecandidate = (event) => {
+          const cand = event.candidate;
+          if (!cand) return;
+          try {
+            ws.send(
+              JSON.stringify({
+                type: "candidate",
+                role: "viewer",
+                room_id: roomId,
+                candidate: {
+                  candidate: cand.candidate,
+                  sdpMid: cand.sdpMid,
+                  sdpMLineIndex: cand.sdpMLineIndex,
+                },
+              })
+            );
+          } catch (e) {
+            log(`Failed to send ICE candidate: ${e?.message || e}`);
+          }
+        };
+
+        pc.onconnectionstatechange = () => {
+          log(`pc.connectionState=${pc.connectionState}`);
+          if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
+            setState(pc.connectionState, "err");
+          }
+        };
+
+        pc.addTransceiver("video", { direction: "recvonly" });
+
+        const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: false });
+        await pc.setLocalDescription(offer);
+
+        log("Sending offer…");
+        ws.send(
+          JSON.stringify({
+            type: "offer",
+            role: "viewer",
+            room_id: roomId,
+            sdp: offer.sdp,
+          })
+        );
+      }
+
+      connectBtn.addEventListener("click", () => connect().catch((e) => {
+        setState("connect failed", "err");
+        log(String(e?.message || e));
+        disconnect().catch(() => {});
+      }));
+      disconnectBtn.addEventListener("click", () => disconnect());
+
+      window.addEventListener("beforeunload", () => {
+        try { ws && ws.close(); } catch {}
+        try { pc && pc.close(); } catch {}
+      });
+
+      setState("idle");
+      log("Ready. Clica Conectar.");
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<body>
+  <video id="local" autoplay muted playsinline></video>
+  <script>
+    async function start() {
+      const pc = new RTCPeerConnection();
+      const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      document.getElementById('local').srcObject = stream;
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+      const ws = new WebSocket('ws://10.222.248.231:9000');
+      ws.onopen = async () => {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        ws.send(JSON.stringify({type:'offer',sdp:offer.sdp}));
+      };
+      ws.onmessage = async (ev) => {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === 'answer') {
+          await pc.setRemoteDescription({type:'answer',sdp:msg.sdp});
+        }
+      };
+    }
+    start();
+  </script>
+</body>
+</html>

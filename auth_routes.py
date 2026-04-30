@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from database import get_database
 from email_recover import send_recovery_email
 from jwt_handler import create_access_token
+from auth_utils import get_current_user
 import bcrypt
 import secrets
 import datetime
